@@ -5,6 +5,9 @@ c128lib_BasicUpstart128($1c10)
 
 * = $1c10 "Entry"
 Entry: {
+    SetupInterrupt()
+
+// Clean screen
     jsr c128lib.Kernal.CINT
 
 // Changing border/bg color
@@ -14,26 +17,18 @@ Entry: {
     lda #SPRITES_OFFSET.COMMODORE
     sta COMMODORE_PTR
 
-    lda #RED
-    sta c128lib.Vic2.SPRITE_0_COLOR
+    c128lib_SpriteColor(0, RED)
 
-    lda #BLUE
-    sta c128lib.Vic2.SPRITE_COL_0
+    c128lib_SpriteMultiColor0(BLUE)
+    c128lib_SpriteMultiColor1(DARK_GRAY)
 
-    lda #DARK_GRAY
-    sta c128lib.Vic2.SPRITE_COL_1
-
-    lda #1
-    sta c128lib.Vic2.SPRITE_COL_MODE
-
-// Positioning sprite 0
-    lda #100
-    sta c128lib.Vic2.SHADOW_SPRITE_0_X
-    sta c128lib.Vic2.SHADOW_SPRITE_0_Y
+    c128lib_SpriteEnableMulticolor(c128lib.Vic2.SPRITE_MASK_0 | c128lib.Vic2.SPRITE_MASK_1)
     
-    lda #1
-    sta c128lib.Vic2.SPRITE_ENABLE
+// Positioning sprite 0
+    c128lib_SetSpritePositionWithShadow(0, 100, 100)
 
+    c128lib_SpriteEnable(c128lib.Vic2.SPRITE_MASK_0)
+        
     IsReturnPressedAndReleased()
 
 // Moving sprite 0
@@ -45,19 +40,12 @@ Entry: {
     lda #SPRITES_OFFSET.COMMODORE
     sta COMMODORE_PTR + 1
 
-    lda #YELLOW
-    sta c128lib.Vic2.SPRITE_1_COLOR
-
-    lda #3
-    sta c128lib.Vic2.SPRITE_COL_MODE
+    c128lib_SpriteColor(1, YELLOW)
 
 // Positioning sprite 1
-    lda #110
-    sta c128lib.Vic2.SHADOW_SPRITE_1_X
-    sta c128lib.Vic2.SHADOW_SPRITE_1_Y
+    c128lib_SetSpritePositionWithShadow(1, 110, 110)
     
-    lda #3
-    sta c128lib.Vic2.SPRITE_ENABLE
+    c128lib_SpriteEnable(c128lib.Vic2.SPRITE_MASK_1)
 
     IsReturnPressedAndReleased()
 
@@ -65,6 +53,17 @@ Entry: {
     c128lib_SpriteMove(1, 3, c128lib.Vic2.SPRITE_MAIN_DIR_LEFT, $7f00, $0000)
 
     rts
+}
+
+CollisionIrq: {
+    lda c128lib.Vic2.IRR
+    sta c128lib.Vic2.IRR
+
+    lda c128lib.Vic2.SPRITE_2S_COLLISION
+    beq !Done+
+    inc $d020
+  !Done:
+    jmp $fa65
 }
 
 * = * "DetectKeyPressed"
@@ -112,6 +111,27 @@ ReturnPressed: .byte $00
     bne !-
 }
 
+.macro SetupInterrupt() {
+    sei
+    lda #$7f
+    sta c128lib.Cia.CIA1_IRQ_CONTROL
+    lda #<CollisionIrq
+    sta $0314
+    lda #>CollisionIrq
+    sta $0315
+
+    lda #$30
+    sta c128lib.Vic2.RASTER
+    lda c128lib.Vic2.CONTROL_1
+    and #$7f
+    sta c128lib.Vic2.CONTROL_1
+
+    lda #$05
+    sta c128lib.Vic2.IMR
+    sta c128lib.Vic2.IRR
+    cli
+}
+
 * = $2000 "Sprites"
 SPRITES:
 .import binary "./assets/sprites.bin"
@@ -123,5 +143,6 @@ SPRITES_OFFSET: {
 #import "./common/lib/common-global.asm"
 #import "./common/lib/kernal.asm"
 #import "./chipset/lib/cia.asm"
+#import "./chipset/lib/sprites-global.asm"
 #import "./chipset/lib/vic2.asm"
 #import "./chipset/lib/vic2-global.asm"
