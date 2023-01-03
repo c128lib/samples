@@ -41,11 +41,25 @@ Entry: {
 
   Loop:
     c128lib_GetFirePressedPort1()
-    sta $04E2
+    clc
     beq !Zero+
-    sta 
+    adc #33
+    jmp !Print+
+  !Zero:
+    adc #48
+
+  !Print:
+    sta $04E3
 
     c128lib_GetFirePressedPort2()
+    clc
+    beq !Zero+
+    adc #33
+    jmp !Print+
+  !Zero:
+    adc #48
+
+  !Print:
     sta $050B
     
     jmp Loop
