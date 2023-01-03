@@ -43,7 +43,7 @@ workflows:
                 filters:
                     branches:
                         only:
-                            - main
+                            - master
                             - develop
                     tags:
                         only:
@@ -52,7 +52,7 @@ workflows:
                 filters:
                     branches:
                         ignore:
-                            - main
+                            - master
                             - develop
                     tags:
                         only:
