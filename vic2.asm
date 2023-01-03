@@ -1,8 +1,13 @@
+#importonce 
+.segmentdef Vic2 [start=$1c01]
+.segment Vic2
+
 c128lib_BasicUpstart128($1c10)
 
 .label SCREEN_RAM = $0400
 .label COMMODORE_PTR = SCREEN_RAM + $3f8
 
+.namespace Vic2 {
 * = $1c10 "Entry"
 Entry: {
     SetupInterrupt()
@@ -138,6 +143,8 @@ SPRITES:
 
 SPRITES_OFFSET: {
   .label COMMODORE = (SPRITES / 64)
+}
+
 }
 
 #import "./common/lib/common-global.asm"
