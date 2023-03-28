@@ -67,6 +67,10 @@ Entry: {
 
     IsReturnPressedAndReleased()
 
+    lda #'a'
+    jsr c128lib.Vdc.FillScreen
+    IsReturnPressedAndReleased()
+
 // Now let the user choose his favourite color
   UserSelect:
     clc
@@ -132,5 +136,9 @@ SampleString3: .text "DUIS QUIS TEMPOR TELLUS. VIVAMUS MATTIS VESTIBULUM TORTOR 
 
 #import "keyboard-helper.asm"
 
+// Defining guard to consent the use of FillScreen subroutine
+#define FILLSCREEN
+
 #import "./common/lib/common-global.asm"
+#import "./chipset/lib/vdc.asm"
 #import "./chipset/lib/vdc-global.asm"
